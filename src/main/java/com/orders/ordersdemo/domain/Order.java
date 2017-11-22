@@ -2,16 +2,23 @@ package com.orders.ordersdemo.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+@Document(collection = "orders")
 public class Order {
     @Id
     private String id;
     @Indexed(unique = true)
+    @NotNull
     private String orderNumber;
+    @NotNull
     private String status;
+    @NotNull
     private String sourceSystem;
+    @NotNull
     private Vendor vendor;
     private Date createdTimestamp;
     private Date updatedTimestamp;
