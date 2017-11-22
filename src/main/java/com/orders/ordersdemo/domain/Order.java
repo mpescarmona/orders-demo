@@ -1,8 +1,14 @@
 package com.orders.ordersdemo.domain;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+
 import java.util.Date;
 
 public class Order {
+    @Id
+    private String id;
+    @Indexed(unique = true)
     private String orderNumber;
     private String status;
     private String sourceSystem;
@@ -12,6 +18,15 @@ public class Order {
 
 
     public Order() {}
+
+    public String getId() {
+        return id;
+    }
+
+    public Order setId(String id) {
+        this.id = id;
+        return this;
+    }
 
     public String getOrderNumber() {
         return orderNumber;
