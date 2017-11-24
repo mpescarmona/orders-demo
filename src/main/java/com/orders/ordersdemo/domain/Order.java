@@ -26,6 +26,16 @@ public class Order {
 
     public Order() {}
 
+    public Order(String id, String orderNumber, String status, String sourceSystem, Vendor vendor, Date createdTimestamp, Date updatedTimestamp) {
+        this.id = id;
+        this.orderNumber = orderNumber;
+        this.status = status;
+        this.sourceSystem = sourceSystem;
+        this.vendor = vendor;
+        this.createdTimestamp = createdTimestamp;
+        this.updatedTimestamp = updatedTimestamp;
+    }
+
     public String getId() {
         return id;
     }
