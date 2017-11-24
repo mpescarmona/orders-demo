@@ -25,18 +25,7 @@ public class OrdersDemoApplicationTests {
 	@Autowired
 	private OrderRepository orderRepository;
 
-	@Before
-	public void deleteAllBeforeTests() throws Exception {
-		orderRepository.deleteAll();
-
-		Vendor vendor = new Vendor("1", "Test Vendor");
-		Order order = new Order("1", "1", "PENDING", "TEST", vendor, new Date(),null);
-
-		orderRepository.save(order);
-	}
-
 	@Test
 	public void contextLoads() {
 	}
-
 }
