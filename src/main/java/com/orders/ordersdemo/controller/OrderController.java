@@ -1,5 +1,10 @@
 package com.orders.ordersdemo.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orders.ordersdemo.domain.Message;
+import com.orders.ordersdemo.domain.MessageOrder;
 import com.orders.ordersdemo.domain.Order;
 import com.orders.ordersdemo.domain.Vendor;
 import com.orders.ordersdemo.exception.OrderNotFoundException;
@@ -67,16 +72,21 @@ public class OrderController {
     }
 
     private void sendMessage(String routingKey, String orderNumber) {
-        StringBuilder sb = new StringBuilder("{").append("\n");
-        sb.append("    ").append("\"eventId\": \"").append(UUID.randomUUID()).append("\",").append("\n");
-        sb.append("    ").append("\"eventType\": \"").append(routingKey).append("\",").append("\n");
-        sb.append("    ").append("\"order\": {").append("\n");
-        sb.append("    ").append("    ").append("\"orderNumber\": \"").append(orderNumber).append("\",").append("\n");
-        sb.append("    ").append("    ").append("\"resource\": \"").append("http://localhost:8080/orders?orderNumber=").append(orderNumber).append("\"").append("\n");
-        sb.append("    ").append("}\n");
-        sb.append("}");
 
-        sender.send(RabbitMqConfig.EXCHANGE_NAME, RabbitMqConfig.ROUTING_KEY_ORDER_UPDATE, sb.toString());
+        MessageOrder messageOrder = new MessageOrder(orderNumber, "http://localhost:8080/orders?orderNumber=" +
+                orderNumber);
+        Message message = new Message(UUID.randomUUID().toString(), routingKey, messageOrder);
+        ObjectMapper jsonMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        String jsonMessage;
+        try {
+            jsonMessage = jsonMapper.writeValueAsString(message);
+
+            sender.send(RabbitMqConfig.EXCHANGE_NAME, routingKey, jsonMessage);
+        } catch (JsonProcessingException e) {
+            System.out.println("There were an error trying to generate a message with key [" + routingKey + "] for " +
+                    "order [" + orderNumber + "]");
+        }
     }
 
     private boolean isValid(Order order) {
