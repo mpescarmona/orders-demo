@@ -3,7 +3,6 @@ package com.orders.ordersdemo.repository;
 import com.orders.ordersdemo.domain.Order;
 import com.orders.ordersdemo.domain.Vendor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(SpringRunner.class)
 @DataMongoTest
-@Ignore
 public class OrderRepositoryTest {
 
 	@Autowired
@@ -27,66 +26,59 @@ public class OrderRepositoryTest {
 	private MongoTemplate template;
 
 	@Before
-	public void deleteAllBeforeTests() throws Exception {
+	public void prepareDataBeforeTests() throws Exception {
 		orderRepository.deleteAll();
 
-		Vendor vendor = new Vendor("1", "Test Vendor");
-		Order order = new Order("1", "1", "PENDING", "TEST", vendor, new Date(),null);
+		Vendor vendor1 = new Vendor("1", "NIKE");
+		Order order1 = new Order("1", "1", "PENDING", "PROMPT", vendor1, new Date(), null);
+		orderRepository.save(order1);
 
-		orderRepository.save(order);
+		Vendor vendor2 = new Vendor("2", "ADIDAS");
+		Order order2 = new Order("2", "2", "PENDING", "PROMPT", vendor2, new Date(), null);
+		orderRepository.save(order2);
 
+		Vendor vendor3 = new Vendor("2", "PUMA");
+		Order order3 = new Order("3", "3", "ACTIVE", "PROMPT", vendor3, new Date(), null);
+		orderRepository.save(order3);
+
+		Vendor vendor4 = new Vendor("4", "REEBOK");
+		Order order4 = new Order("4", "4", "PENDING", "PROMPT", vendor4, new Date(), null);
+		orderRepository.save(order4);
 	}
-
-//	private static final String LOCALHOST = "127.0.0.1";
-//	private static final String DB_NAME = "itest";
-//	private static final int MONGO_TEST_PORT = 27028;
-//
-//	private static MongodProcess mongoProcess;
-//	private static Mongo mongo;
-//
-//
-//	@BeforeClass
-//	public static void initializeDB() throws IOException {
-//
-//		RuntimeConfigBuilder runtimeConfigBuilder = new RuntimeConfigBuilder();
-//		runtimeConfigBuilder.build();
-//		IRuntimeConfig config = runtimeConfigBuilder.build();
-////		config.setExecutableNaming(new UserTempNaming());
-//
-//		MongodStarter starter = MongodStarter.getInstance(config);
-//
-//		MongodExecutable mongoExecutable = starter.prepare(new MongodConfig(Version.V2_2_0, MONGO_TEST_PORT, false));
-//		mongoProcess = mongoExecutable.start();
-//
-//		mongo = new Mongo(LOCALHOST, MONGO_TEST_PORT);
-//		mongo.getDB(DB_NAME);
-//	}
-//
-//	@AfterClass
-//	public static void shutdownDB() throws InterruptedException {
-//		mongo.close();
-//		mongoProcess.stop();
-//	}
-//
-//
-//	@Before
-//	public void setUp() throws Exception {
-//		repoImpl = new SampleRepositoryMongoImpl();
-//		template = new MongoTemplate(mongo, DB_NAME);
-//		repoImpl.setMongoOps(template);
-//	}
-//
-//	@After
-//	public void tearDown() throws Exception {
-//		template.dropCollection(Order.class);
-//	}
 
 	@Test
-	public void testSave() {
+	public void testFindAll() {
 		int samplesInCollection = template.findAll(Order.class).size();
 
-		assertEquals("Only 1 Order should exist in collection, but there are "
-				+ samplesInCollection, 1, samplesInCollection);
+		assertEquals("Only 4 Orders should exist in collection, but there are " + samplesInCollection, 4,
+				samplesInCollection);
 	}
 
+	@Test
+	public void testUpdateOrderAndVerifyTheChanges() {
+		Order foundOrder = orderRepository.findByOrderNumber("1");
+
+		assertEquals("The order status should be 'PENDING', but there is " + foundOrder.getStatus(), "PENDING",
+				foundOrder.getStatus());
+
+		foundOrder.setStatus("ACTIVE");
+
+		assertEquals("The order status should be 'ACTIVE', but there is " + foundOrder.getStatus(), "ACTIVE",
+				foundOrder.getStatus());
+	}
+
+	@Test
+	public void testFindByOrderShouldReturnValidOrder() {
+		Order foundOrder = orderRepository.findByOrderNumber("1");
+
+		assertEquals("The order status should be 'PENDING', but there is " + foundOrder.getStatus(), "PENDING",
+				foundOrder.getStatus());
+	}
+
+	@Test
+	public void testFindByOrderShouldReturnNullIfNotExists() {
+		Order foundOrder = orderRepository.findByOrderNumber("NotExistingOrder");
+
+		assertNull(foundOrder);
+	}
 }
